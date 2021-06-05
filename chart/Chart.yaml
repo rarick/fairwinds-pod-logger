@@ -1,0 +1,3 @@
+apiVersion: v3
+name: fairwinds-pod-logger
+version: 1.0.0
