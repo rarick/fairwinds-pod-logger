@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fairwinds-pod-logger
-  labels:
-    app: fairwinds-pod-logger
 spec:
   selector:
     matchLabels:
@@ -17,4 +15,4 @@ spec:
       containers:
         - name: fairwinds-pod-logger
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
-          args: ["tail", "-f", "/dev/null"]
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
