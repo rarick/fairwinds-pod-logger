@@ -1,4 +1,4 @@
 image:
   name: rarick/fairwinds-pod-logger
-  tag: latest
+  tag: master
   pullPolicy: Always
