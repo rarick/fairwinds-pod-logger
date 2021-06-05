@@ -1,33 +1,74 @@
 package main
 
 import (
+  "context"
   "log"
   "os"
   "time"
 
   api "k8s.io/api/core/v1"
+  metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
   "k8s.io/apimachinery/pkg/fields"
   "k8s.io/apimachinery/pkg/util/wait"
+  corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
   "k8s.io/client-go/rest"
   "k8s.io/client-go/tools/cache"
-  corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+  "k8s.io/client-go/util/retry"
 )
 
-func podAdded(obj interface{}, timeAtStart *time.Time) {
+func setPodAnnotations(pod *api.Pod) {
+  ann := pod.ObjectMeta.Annotations
+  if ann == nil {
+    ann = make(map[string]string)
+    pod.ObjectMeta.Annotations = ann
+  }
+
+  ann["fairwinds-timestamp"] = time.Now().String()
+}
+
+func podAdded(obj interface{}, kubeClient *corev1.CoreV1Client, timeAtStart *time.Time) {
   pod := obj.(*api.Pod)
   if pod.ObjectMeta.CreationTimestamp.Time.Before(*timeAtStart) {
-    // Pod existed before our watcher started
+    // Pod existed before this watcher started
     return
   }
 
-  log.Println("Pod created: " + pod.ObjectMeta.Name)
+  log.Printf("Pod created: %s/%s\n", pod.ObjectMeta.Namespace, pod.ObjectMeta.Name)
+
+  // TODO: Select a context
+  err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+      newPod, getErr := kubeClient.Pods(pod.ObjectMeta.Namespace).Get(
+        context.TODO(),
+        pod.ObjectMeta.Name,
+        metav1.GetOptions{},
+      )
+
+      if getErr != nil {
+        panic(getErr.Error())
+      }
+
+      setPodAnnotations(newPod)
+
+      _, updateErr := kubeClient.Pods(pod.ObjectMeta.Namespace).Update(
+        context.TODO(),
+        newPod,
+        metav1.UpdateOptions{},
+      )
+
+      return updateErr
+    },
+  )
+
+  if err != nil {
+    panic(err.Error())
+  }
 }
 
-func watchForPodsCreated(client cache.Getter, timeAtStart *time.Time) {
+func watchForPodsCreated(kubeClient *corev1.CoreV1Client, timeAtStart *time.Time) {
   // ListerWatcher for pods, watching for all fields
   // Required by cache.NewInformer
   listerWatcher := cache.NewListWatchFromClient(
-    client,
+    kubeClient.RESTClient(),
     "pods",
     api.NamespaceAll,
     fields.Everything(),
@@ -41,7 +82,7 @@ func watchForPodsCreated(client cache.Getter, timeAtStart *time.Time) {
     resyncPeriod,
     cache.ResourceEventHandlerFuncs{
       AddFunc: func (obj interface{}) {
-        podAdded(obj, timeAtStart)
+        podAdded(obj, kubeClient, timeAtStart)
       },
     },
   )
@@ -65,5 +106,5 @@ func main() {
     panic(err.Error())
   }
 
-  watchForPodsCreated(kubeClient.RESTClient(), &timeAtStart)
+  watchForPodsCreated(kubeClient, &timeAtStart)
 }

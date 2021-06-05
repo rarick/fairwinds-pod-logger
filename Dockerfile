@@ -13,7 +13,7 @@ RUN go get -d -v ./...
 RUN go install -v ./...
 
 ################################
-FROM $IMAGE_IMAGE:$IMAGE_TAG as final
+FROM $IMAGE_NAME:$IMAGE_TAG as final
 ################
 
 WORKDIR /go
