@@ -13,6 +13,8 @@ spec:
       labels:
         app: fairwinds-pod-logger
     spec:
+      serviceAccountName: fairwinds-pod-logger
       containers:
         - name: fairwinds-pod-logger
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          args: ["tail", "-f", "/dev/null"]

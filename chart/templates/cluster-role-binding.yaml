@@ -8,6 +8,6 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount
-    name: pod-reader
+    name: fairwinds-pod-logger
     namespace: {{ .Release.Namespace | quote }}
     apiGroup: ""
