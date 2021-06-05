@@ -40,7 +40,7 @@ func watchForPodsCreated(client cache.Getter) {
     },
   )
 
-  go eventController.Run(wait.NeverStop)
+  eventController.Run(wait.NeverStop)
 }
 
 func main() {
