@@ -37,11 +37,12 @@ Application configuration will be added in the future
 - Allow custom annotation key / timestamp format
 - Unit tests, I'm sure there's a way to test this without installing into a cluster
 - Update context / timeout
+- Ability to filter which namespaces are desired, or to list from namespaces with a desired filter
 
 ### Docker image
 - Docker image user creation/improvements there
 - Make container use dumb-init, print out a startup message, etc
 
 ### Helm chart
-- Unique naming of resources by Release name
 - Usage of labels
+- Countless customization options
