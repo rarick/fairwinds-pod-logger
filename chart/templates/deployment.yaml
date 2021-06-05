@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fairwinds-pod-logger
+  name: "{{ .Release.Name }}-deployment"
 spec:
   selector:
     matchLabels:
-      app: fairwinds-pod-logger
+      app: "{{ .Release.Name }}-deployment"
   template:
     metadata:
       labels:
-        app: fairwinds-pod-logger
+        app: "{{ .Release.Name }}-deployment"
     spec:
-      serviceAccountName: fairwinds-pod-logger
+      serviceAccountName: "{{ .Release.Name }}-service-account"
       containers:
         - name: fairwinds-pod-logger
           image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"

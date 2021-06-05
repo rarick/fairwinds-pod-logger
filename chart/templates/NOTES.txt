@@ -1,1 +1,1 @@
-Pod logger installed.
+Fairwinds pod logger installed
