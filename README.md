@@ -37,7 +37,14 @@ Application configuration will be added in the future
 - Allow custom annotation key / timestamp format
 - Unit tests, I'm sure there's a way to test this without installing into a cluster
 - Update context / timeout
-- Ability to filter which namespaces are desired, or to list from namespaces with a desired filter
+- Ability to filter which namespaces are desired with an annotation, or to list from namespaces by annotation
+  - This could be accomplished by using `corev1.Namespace(namespaceName)` to get a
+    [NamespaceInterface](https://pkg.go.dev/k8s.io/client-go@v0.21.1/kubernetes/typed/core/v1#NamespaceInterface),
+    and checking the metadata on it. Update the `podAdded` call to return if the desired annotation is not found.
+    The same approach could be used with the PodInterface.
+- Leader election
+  - I did not look into leader election much due to time constraints, but it appears you'll want to use the
+    [client-go leader-election tools](https://pkg.go.dev/k8s.io/client-go/tools/leaderelection)
 
 ### Docker image
 - Docker image user creation/improvements there
@@ -46,3 +53,5 @@ Application configuration will be added in the future
 ### Helm chart
 - Usage of labels
 - Countless customization options
+
+###
