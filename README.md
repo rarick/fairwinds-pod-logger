@@ -51,7 +51,8 @@ Application configuration will be added in the future
 - Make container use dumb-init, print out a startup message, etc
 
 ### Helm chart
+- Nicer NOTES.txt
 - Usage of labels
 - Countless customization options
-
-###
+- Use of `_helpers.tpl` to reduce possibilities of error
+  - For example, the name of the service account is repeated in 3 different places

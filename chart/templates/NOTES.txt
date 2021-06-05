@@ -1,1 +1,5 @@
-Fairwinds pod logger installed
+Fairwinds pod logger installed!
+
+Check your pod's logs:
+
+  kubectl logs -f -n "{{ .Release.Namespace }}" -l "app={{ .Release.Name }}-deployment"
