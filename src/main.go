@@ -16,6 +16,7 @@ import (
   "k8s.io/client-go/util/retry"
 )
 
+// Set pod annotation in a callback
 func setPodAnnotations(pod *api.Pod) {
   ann := pod.ObjectMeta.Annotations
   if ann == nil {
@@ -23,9 +24,11 @@ func setPodAnnotations(pod *api.Pod) {
     pod.ObjectMeta.Annotations = ann
   }
 
+  // TODO: Support custom time string format
   ann["fairwinds-timestamp"] = time.Now().String()
 }
 
+// Callback for when a pod is added
 func podAdded(obj interface{}, kubeClient *corev1.CoreV1Client, timeAtStart *time.Time) {
   pod := obj.(*api.Pod)
   if pod.ObjectMeta.CreationTimestamp.Time.Before(*timeAtStart) {
@@ -33,10 +36,12 @@ func podAdded(obj interface{}, kubeClient *corev1.CoreV1Client, timeAtStart *tim
     return
   }
 
+  // TODO: Support custom log string format
   log.Printf("Pod created: %s/%s\n", pod.ObjectMeta.Namespace, pod.ObjectMeta.Name)
 
   // TODO: Select a context
   err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+      // TODO: Select a context
       newPod, getErr := kubeClient.Pods(pod.ObjectMeta.Namespace).Get(
         context.TODO(),
         pod.ObjectMeta.Name,
@@ -74,6 +79,7 @@ func watchForPodsCreated(kubeClient *corev1.CoreV1Client, timeAtStart *time.Time
     fields.Everything(),
   )
 
+  // TODO: Support custom resyncPeriod
   resyncPeriod := 30 * time.Second
 
   _, eventController := cache.NewInformer(
@@ -94,6 +100,7 @@ func main() {
   timeAtStart := time.Now()
   log.SetOutput(os.Stdout)
 
+  // TODO: Support possibility of execution outside of cluster
   config, err := rest.InClusterConfig()
 
   if err != nil {
