@@ -11,3 +11,12 @@
 - Create config instructions
 - Create Dockerfile & image
   - Create configuration options
+
+# Improvements
+- Unique naming of resources
+- Countless helm chart customization improvements
+- Docker image user creation/improvements there
+- Trim down contents of container
+  - dockerignore, go.sum, etc
+- Make container use dumb-init and print out a startup message
+- Separate build/run images

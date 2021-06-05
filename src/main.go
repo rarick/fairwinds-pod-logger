@@ -5,7 +5,6 @@ import (
   "os"
   "time"
 
-  // TODO: Check if this these are right
   api "k8s.io/api/core/v1"
   "k8s.io/apimachinery/pkg/fields"
   "k8s.io/apimachinery/pkg/util/wait"
@@ -14,12 +13,17 @@ import (
   corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
-func podAddCallback(obj interface{}) {
+func podAdded(obj interface{}, timeAtStart *time.Time) {
   pod := obj.(*api.Pod)
+  if pod.ObjectMeta.CreationTimestamp.Time.Before(*timeAtStart) {
+    // Pod existed before our watcher started
+    return
+  }
+
   log.Println("Pod created: " + pod.ObjectMeta.Name)
 }
 
-func watchForPodsCreated(client cache.Getter) {
+func watchForPodsCreated(client cache.Getter, timeAtStart *time.Time) {
   // ListerWatcher for pods, watching for all fields
   // Required by cache.NewInformer
   listerWatcher := cache.NewListWatchFromClient(
@@ -36,7 +40,9 @@ func watchForPodsCreated(client cache.Getter) {
     &api.Pod{},
     resyncPeriod,
     cache.ResourceEventHandlerFuncs{
-      AddFunc: podAddCallback,
+      AddFunc: func (obj interface{}) {
+        podAdded(obj, timeAtStart)
+      },
     },
   )
 
@@ -44,22 +50,20 @@ func watchForPodsCreated(client cache.Getter) {
 }
 
 func main() {
+  timeAtStart := time.Now()
   log.SetOutput(os.Stdout)
 
-  // TODO: Update how authentication is done
   config, err := rest.InClusterConfig()
 
   if err != nil {
-    // TODO: Determine how errors should be handled
     panic(err.Error())
   }
 
   kubeClient, err := corev1.NewForConfig(config)
 
   if err != nil {
-    // TODO: Determine how errors should be handled
     panic(err.Error())
   }
 
-  watchForPodsCreated(kubeClient.RESTClient())
+  watchForPodsCreated(kubeClient.RESTClient(), &timeAtStart)
 }
